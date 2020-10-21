@@ -40,13 +40,13 @@ namespace MoC1
         static float[] CProbCalc(float[] MProb, float[]KProb, int[,] EncrTable)
         {
             float[] CProb = new float[20];
-            int cpIndex;
-            for (int i = 0; i < 20; i++)
+            int cpIndex;                          //cyphertext index
+            for (int i = 0; i < 20; i++)          // key index
             {
-                for (int j = 0; j < 20; j++)
+                for (int j = 0; j < 20; j++)      // opentext index
                 {
                     cpIndex = EncrTable[i, j];
-                    CProb[cpIndex] += MProb[i] * KProb[j];
+                    CProb[cpIndex] += MProb[j] * KProb[i];
                 }
             }           
             return CProb;
@@ -54,29 +54,27 @@ namespace MoC1
 
         static float[,] MCProbCalc(float[] MProb, float[] KProb, int[,] EncrTable)
         {
-            float[,] CMProb = new float[20, 20];
-            int cpIndex;
-            for (int i = 0; i < 20; i++)
+            float[,] MCProb = new float[20, 20];
+            int cpIndex;                          //cyphertext index
+            for (int i = 0; i < 20; i++)          // key index
             {
-                for (int j = 0; j < 20; j++)
+                for (int j = 0; j < 20; j++)      // opentext index
                 {
                     cpIndex = EncrTable[i, j];
-                    CMProb[i, cpIndex] += MProb[i] * KProb[j];
+                    MCProb[cpIndex, j] += MProb[j] * KProb[i];
                 }
             }
-
-
-            return CMProb;
+            return MCProb;
         }
 
         static float[,] MCCondProbCalc(float[] CProb, float[,] MCProb)
         {
             float[,] MCcondProb = new float[20, 20];
-            for (int i = 0; i < 20; i++)
+            for (int i = 0; i < 20; i++)         //cyphertext index
             {
-                for (int j = 0; j < 20; j++)
+                for (int j = 0; j < 20; j++)     //opentext index
                 {
-                    MCcondProb[i, j] = MCProb[i, j] / CProb[j];
+                    MCcondProb[i, j] = MCProb[i, j] / CProb[i];
                 }
             }
             return MCcondProb;
@@ -90,17 +88,27 @@ namespace MoC1
             int[,] ET = new int[20, 20];
             string v = "06";
             ReadFiles(v, MP, KP, ET);
+            
+            var CP = CProbCalc(MP, KP, ET);
             var MCP = MCProbCalc(MP, KP, ET);
+            var MCcP = MCCondProbCalc(CP, MCP);
+
             float t = 0;
+            
             for (int i = 0; i < 20; i++)
             {
+                t = 0;
                 for (int j = 0; j < 20; j++)
                 {
-                    Console.Write(MCP[i, j] + "  ");
+                    Console.Write(MCcP[i, j] + "  ");
+                    t += MCcP[i,j];
                 }
+                Console.WriteLine(t);
                 Console.WriteLine();
+                //t += CP[i];
             }
-            Console.WriteLine(t);
+
+            Console.WriteLine();
             Console.ReadKey();
         }
     }
