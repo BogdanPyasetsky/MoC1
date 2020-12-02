@@ -78,21 +78,72 @@ namespace MoC1
                 }
             }
             return MCcondProb;
+        } 
+
+        static int DDF(float[,] MCcondProb, int C)
+        {
+            int M;
+            float[] MCandidatesProb = new float[20];
+            for (int i = 0; i < 20; i++)
+            {
+                MCandidatesProb[i] = MCcondProb[C, i];
+            }
+            M = Array.IndexOf(MCandidatesProb, MCandidatesProb.Max());
+            return M;
         }
 
+        static int SDF(float[,] MCcondProb, int C)
+        {
+            int M;
+            float[] MCandidatesProb = new float[20];
+            for (int i = 0; i < 20; i++)
+            {
+                MCandidatesProb[i] = MCcondProb[C, i];
+            }
+            var maxProb = MCandidatesProb.Max();
+            List<int> CandidateIdx = new List<int>();
+            for (int i = 0; i < 20; i++)
+            {
+                if (MCandidatesProb[i] == maxProb)
+                    CandidateIdx.Add(i);
+            }
+            var NumberOfCandidates = CandidateIdx.Count;
+            float candidateProb = 1 / (float)NumberOfCandidates;
+            var random = new Random();
+            var rd = random.Next(NumberOfCandidates);
+            M = CandidateIdx[rd];
+            return M;
+        }
+            
 
         static void Main(string[] args)
         {
+            
             float[] MP = new float[20];
             float[] KP = new float[20];
             int[,] ET = new int[20, 20];
             string v = "06";
             ReadFiles(v, MP, KP, ET);
+
             
             var CP = CProbCalc(MP, KP, ET);
             var MCP = MCProbCalc(MP, KP, ET);
             var MCcP = MCCondProbCalc(CP, MCP);
+            var mDDF = DDF(MCcP, 5);
+            var mSDF = SDF(MCcP, 5);
+            
 
+            /*
+            string name = "prob.txt";
+            string temp = "";
+            for (int i = 0; i < 20; i++)
+            {
+                temp += CP[i].ToString() + "  ";
+            }
+            File.WriteAllText(name, temp);
+            */
+
+            /*
             float t = 0;
             
             for (int i = 0; i < 20; i++)
@@ -106,9 +157,13 @@ namespace MoC1
                 Console.WriteLine(t);
                 Console.WriteLine();
                 //t += CP[i];
-            }
+            }*/
 
-            Console.WriteLine();
+            
+
+
+            Console.WriteLine(mDDF);
+            Console.WriteLine(mSDF);
             Console.ReadKey();
         }
     }
