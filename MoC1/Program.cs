@@ -92,7 +92,37 @@ namespace MoC1
             return M;
         }
 
-        static int SDF(float[,] MCcondProb, int C)
+        static float ALFforDDF(float[,] MCProb, float[,] MCcondProb)
+        {
+            int[,] LFres = new int[20, 20];
+            for(int i = 0; i < 20; i++)        // cyphertext
+            {
+                for (int j = 0; j < 20; j++)   // opentext
+                {
+                    LFres[i, j] = 1;
+                }
+            }
+            for (int i = 0; i < 20; i++)
+                LFres[i, DDF(MCcondProb, i)] = 0;
+
+            float result = 0;
+
+            for (int i = 0; i < 20; i++)        // cyphertext
+            {
+                for (int j = 0; j < 20; j++)   // opentext
+                {
+                    result += MCProb[i, j] * LFres[i, j];
+                }
+
+            }
+
+            return result;
+        }
+
+
+
+
+        static List<int> SDF(float[,] MCcondProb, int C)
         {
             int M;
             float[] MCandidatesProb = new float[20];
@@ -109,12 +139,33 @@ namespace MoC1
             }
             var NumberOfCandidates = CandidateIdx.Count;
             float candidateProb = 1 / (float)NumberOfCandidates;
-            var random = new Random();
-            var rd = random.Next(NumberOfCandidates);
-            M = CandidateIdx[rd];
-            return M;
+            return CandidateIdx;
         }
-            
+
+        static float ALFforSDF(float[,] MCProb, float[,] MCcondProb)
+        {
+            int[,] LFres = new int[20, 20];
+            List<int> SDFResults;
+            float delta, L, result = 0;
+            for (int i = 0; i < 20; i++)        // opentext
+            {
+                
+                for (int j = 0; j < 20; j++)    // cyphertext
+                {
+                    SDFResults = SDF(MCcondProb, j);
+                    delta = 1 / (float)SDFResults.Count;
+                    if (SDFResults.Exists(x => x == i))
+                        L = 1 - delta;
+                    else
+                        L = 1;
+                    result += MCProb[j, i] * L;
+                }
+            }
+                      
+
+            return result;
+        }
+
 
         static void Main(string[] args)
         {
@@ -122,16 +173,25 @@ namespace MoC1
             float[] MP = new float[20];
             float[] KP = new float[20];
             int[,] ET = new int[20, 20];
-            string v = "06";
+            string v = "17";
             ReadFiles(v, MP, KP, ET);
 
             
             var CP = CProbCalc(MP, KP, ET);
             var MCP = MCProbCalc(MP, KP, ET);
             var MCcP = MCCondProbCalc(CP, MCP);
-            var mDDF = DDF(MCcP, 5);
-            var mSDF = SDF(MCcP, 5);
             
+            //var mDDF = DDF(MCcP, 5);
+            var mSDF = SDF(MCcP, 0);
+
+            mSDF.ForEach(Console.WriteLine);
+            //foreach (int i in mSDF)
+            //  Console.Write(mSDF[i] + "  ");
+
+            /*
+            for (int i = 0; i < 20; i++)
+                Console.WriteLine(DDF(MCcP, i));
+            */
 
             /*
             string name = "prob.txt";
@@ -159,11 +219,13 @@ namespace MoC1
                 //t += CP[i];
             }*/
 
-            
 
 
-            Console.WriteLine(mDDF);
-            Console.WriteLine(mSDF);
+
+            //Console.WriteLine(mDDF);
+            //Console.WriteLine(mSDF);
+            Console.WriteLine(ALFforDDF(MCP,MCcP));
+            Console.WriteLine(ALFforSDF(MCP,MCcP));
             Console.ReadKey();
         }
     }
